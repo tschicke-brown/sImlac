@@ -133,6 +133,23 @@ namespace imlac
             set { _frameLatch = value; }
         }
 
+        public bool LightPenSensitized { get; set; }
+
+        public bool LightPenStatus
+        {
+            get
+            {
+                if (_penStrike && _dtStack.Count > 0)
+                {
+                    return false;
+                }
+                return _penStrike;
+            }
+            set => _penStrike = value;
+        }
+
+        public ushort LPR { get; set; }
+
         public uint X
         {
             get { return _x; }
@@ -223,6 +240,10 @@ namespace imlac
             //
             switch (iotCode)
             {
+                case 0x01:      // load DPC with 0
+                    PC = 0;
+
+                    break;
                 case 0x03:      // load DPC with main processor's AC
                     PC = _system.Processor.AC;
 
@@ -236,11 +257,26 @@ namespace imlac
                     break;
 
                 case 0x39:      // Clear display 40Hz sync latch
+                case 0x3b:
                     _frameLatch = false;
                     break;
 
                 case 0xc4:      // clear halt state
                     State = ProcessorState.Running;
+                    break;
+
+                case 0x59:      // Read Light Pen Register
+                    //TODO tfs: according to http://www.bitsavers.org/pdf/imlac/PDS-1D_ProgrammingGuide.pdf page 31, this should be bits 1-15
+                    _system.Processor.AC |= (ushort)(LPR & 0x7fff);
+                    break;
+                case 0x5a:      // Clear Light Pen status
+                    LightPenStatus = false;
+                    break;
+                case 0x5c:      // Skip if Light Pen status = 1
+                    if (LightPenStatus)
+                    {
+                        _system.Processor.PC++;
+                    }
                     break;
 
                 default:
@@ -371,7 +407,15 @@ namespace imlac
                             break;
 
                         case 0x3:
-                            // TODO: light pen sensitize
+                            switch (instruction.Data & 0x1)
+                            {
+                                case 0:
+                                    LightPenSensitized = false;
+                                    break;
+                                default:
+                                    LightPenSensitized = true;
+                                    break;
+                            }
                             if (Trace.TraceOn) Trace.Log(LogType.DisplayProcessor, "Light pen, stub!");
                             break;
                     }
@@ -656,7 +700,8 @@ namespace imlac
         private Memory _mem;
         private DisplayInstruction[] _instructionCache;
 
-        private readonly int[] _handledIOTs = { 0x3, 0xa, 0x39, 0xc4 };
+        private readonly int[] _handledIOTs = { 0x1, 0x3, 0xa, 0x39, 0x3b, 0x59, 0x5a, 0x5c, 0xc4 };
+        private bool _penStrike;
 
         private enum DisplayOpcode
         {

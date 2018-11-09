@@ -26,8 +26,8 @@ namespace imlac
         {
             _startupArgs = args;
 
-            _console = new SDLConsole(0.5f);
             _imlacSystem = new ImlacSystem();
+            _console = new SDLConsole(_imlacSystem, 0.5f);
             _imlacSystem.AttachConsole(_console);
             _imlacSystem.Reset();
          
@@ -118,6 +118,10 @@ namespace imlac
                             break;
 
                         case SystemExecutionState.Running:
+                            if (_imlacSystem.Processor.PC == 1058)
+                            {
+
+                            }
                             _imlacSystem.SingleStep();
 
                             if (_imlacSystem.Processor.State == ProcessorState.Halted)

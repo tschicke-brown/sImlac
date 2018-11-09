@@ -144,6 +144,11 @@ namespace imlac
                 _ds = _system.Display.DataSwitches;
             }
 
+            if (_pc == 1048)
+            {
+
+            }
+
             switch (_instructionState)
             {
                 case ExecState.Fetch:
@@ -664,8 +669,11 @@ namespace imlac
         {
             public Instruction(ushort word)
             {
+                Word = word;
                 Decode(word);
             }
+
+            public uint Word { get; }
 
             public bool IsIndirect
             {

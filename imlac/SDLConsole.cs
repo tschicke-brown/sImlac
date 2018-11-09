@@ -39,12 +39,15 @@ namespace imlac
     //
     public class SDLConsole : IImlacConsole
     {
-        public SDLConsole(float scaleFactor)
+        private ImlacSystem _system;
+        public SDLConsole(ImlacSystem system, float scaleFactor)
         {
             if (scaleFactor <= 0)
             {
                 throw new ArgumentOutOfRangeException("scaleFactor");
             }
+
+            _system = system;
 
             _scaleFactor = scaleFactor;
             _throttleFramerate = true;
@@ -397,7 +400,7 @@ namespace imlac
 
         private void SdlKeyDown(SDL_Keycode key)
         {            
-            switch(key)
+            switch (key)
             {
                 case SDL_Keycode.SDLK_LSHIFT:
                 case SDL_Keycode.SDLK_RSHIFT:
@@ -539,9 +542,22 @@ namespace imlac
             // which corresponds to a _scaleFactor of 1.0.
             //
             startX = (uint)(startX * _scaleFactor + _xOffset);
-            startY = (uint)(startY *_scaleFactor - _yOffset);
+            startY = (uint)(startY * _scaleFactor - _yOffset);
             endX = (uint)(endX * _scaleFactor + _xOffset);
             endY = (uint)(endY * _scaleFactor - _yOffset);
+
+            var state = SDL_GetMouseState(out var x, out var y);
+            if ((state & SDL_BUTTON_LEFT) != 0 && _system.DisplayProcessor.LightPenSensitized)
+            {
+                float screenX = x;
+                float screenY = y;
+                screenX -= startX;
+                screenY -= startY;
+                if (Math.Sqrt(screenX * screenX + screenY * screenY) < 7)
+                {
+                    _system.DisplayProcessor.LightPenStatus = true;
+                }
+            }
 
             _lock.EnterWriteLock();
 
@@ -721,16 +737,16 @@ namespace imlac
             _sdlVKeymap.Add(SDL_Keycode.SDLK_PLUS, VKeys.Plus);
             _sdlVKeymap.Add(SDL_Keycode.SDLK_PERIOD, VKeys.Period);
             _sdlVKeymap.Add(SDL_Keycode.SDLK_QUESTION, VKeys.QuestionMark);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_0,VKeys.Zero);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_1,VKeys.One);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_2,VKeys.Two);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_3,VKeys.Three);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_4,VKeys.Four);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_5,VKeys.Five);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_6,VKeys.Six);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_7,VKeys.Seven);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_8,VKeys.Eight);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_9,VKeys.Nine);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_0, VKeys.Zero);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_1, VKeys.One);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_2, VKeys.Two);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_3, VKeys.Three);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_4, VKeys.Four);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_5, VKeys.Five);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_6, VKeys.Six);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_7, VKeys.Seven);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_8, VKeys.Eight);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_9, VKeys.Nine);
             _sdlVKeymap.Add(SDL_Keycode.SDLK_MINUS, VKeys.Minus);
             _sdlVKeymap.Add(SDL_Keycode.SDLK_SEMICOLON, VKeys.Semicolon);
 
@@ -741,32 +757,32 @@ namespace imlac
             _sdlVKeymap.Add(SDL_Keycode.SDLK_KP_6, VKeys.Keypad6);
             _sdlVKeymap.Add(SDL_Keycode.SDLK_QUOTEDBL, VKeys.DoubleQuote);
 
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_a,VKeys.A);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_b,VKeys.B);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_c,VKeys.C);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_d,VKeys.D);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_e,VKeys.E);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_f,VKeys.F);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_g,VKeys.G);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_h,VKeys.H);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_i,VKeys.I);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_j,VKeys.J);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_k,VKeys.K);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_l,VKeys.L);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_m,VKeys.M);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_n,VKeys.N);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_o,VKeys.O);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_p,VKeys.P);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_q,VKeys.Q);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_r,VKeys.R);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_s,VKeys.S);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_t,VKeys.T);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_u,VKeys.U);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_v,VKeys.V);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_w,VKeys.W);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_x,VKeys.X);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_y,VKeys.Y);
-            _sdlVKeymap.Add(SDL_Keycode.SDLK_z,VKeys.Z);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_a, VKeys.A);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_b, VKeys.B);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_c, VKeys.C);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_d, VKeys.D);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_e, VKeys.E);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_f, VKeys.F);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_g, VKeys.G);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_h, VKeys.H);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_i, VKeys.I);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_j, VKeys.J);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_k, VKeys.K);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_l, VKeys.L);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_m, VKeys.M);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_n, VKeys.N);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_o, VKeys.O);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_p, VKeys.P);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_q, VKeys.Q);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_r, VKeys.R);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_s, VKeys.S);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_t, VKeys.T);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_u, VKeys.U);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_v, VKeys.V);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_w, VKeys.W);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_x, VKeys.X);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_y, VKeys.Y);
+            _sdlVKeymap.Add(SDL_Keycode.SDLK_z, VKeys.Z);
 
             _sdlVKeymap.Add(SDL_Keycode.SDLK_DELETE, VKeys.Delete);
         }
