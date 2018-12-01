@@ -123,7 +123,7 @@ namespace imlac.IO
             if (_system.Display.IsKeyPressed)
             {
                 _keyCode = GetScancodeForCurrentKey();
-                if (_keyCode != 0)
+                if (_keyCode != 0 && !_keyReady)
                 {
                     Trace.Log(LogType.Keyboard, "Key latched {0}", Helpers.ToOctal(_keyCode));
                     _keyReady = true;
@@ -183,10 +183,11 @@ namespace imlac.IO
             ImlacKey key = _system.Display.Key;
             ImlacKeyModifiers modifiers = _system.Display.KeyModifiers;
 
-            Trace.Log(LogType.Keyboard, "Keypress is {0}", key);
 
-            if (key != ImlacKey.Invalid)
+          if (key != ImlacKey.Invalid)
             {
+                Trace.Log(LogType.Keyboard, "Keypress is {0}", key);
+
                 scanCode = (modifiers & ImlacKeyModifiers.Shift) != 0 ? _keyMappings[key].ShiftedCode : _keyMappings[key].NormalCode;
 
                 if (scanCode == 0)
@@ -218,7 +219,7 @@ namespace imlac.IO
                 }
 
                 Trace.Log(LogType.Keyboard, "Final keycode is {0}", Helpers.ToOctal(scanCode));
-            }
+            } else scanCode=0;
 
             return scanCode;
         }
